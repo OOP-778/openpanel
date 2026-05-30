@@ -30,7 +30,7 @@ on:
       - "**/.prettierignore"
 
 env:
-  repo_owner: "${{ github.repository_owner }}"
+  REPO_OWNER: "${{ github.repository_owner }}"
 
 jobs:
   lint-and-test:
@@ -142,6 +142,7 @@ jobs:
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "repo_owner=$(echo '${{ env.REPO_OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -190,6 +191,9 @@ jobs:
     needs: build-api
     runs-on: ubuntu-latest
     steps:
+      - name: Lowercase repo owner
+        run: echo "repo_owner=$(echo '${{ env.REPO_OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -261,6 +265,7 @@ jobs:
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "repo_owner=$(echo '${{ env.REPO_OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -309,6 +314,9 @@ jobs:
     needs: build-worker
     runs-on: ubuntu-latest
     steps:
+      - name: Lowercase repo owner
+        run: echo "repo_owner=$(echo '${{ env.REPO_OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -380,6 +388,7 @@ jobs:
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          echo "repo_owner=$(echo '${{ env.REPO_OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -428,6 +437,9 @@ jobs:
     needs: build-dashboard
     runs-on: ubuntu-latest
     steps:
+      - name: Lowercase repo owner
+        run: echo "repo_owner=$(echo '${{ env.REPO_OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
