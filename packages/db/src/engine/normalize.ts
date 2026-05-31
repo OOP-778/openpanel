@@ -52,6 +52,7 @@ export async function normalize(
         filters: event.filters ?? [],
         displayName: event.displayName,
         property: event.property,
+        calculationOption: event.calculationOption,
       } as SeriesDefinition;
     },
   );

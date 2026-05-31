@@ -1,9 +1,33 @@
 import { ColorSquare } from '@/components/color-square';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useDispatch } from '@/redux';
 import { shortId } from '@openpanel/common';
 import { alphabetIds } from '@openpanel/constants';
-import type { IChartEvent, IChartEventItem } from '@openpanel/validation';
-import { DatabaseIcon, FilterIcon, type LucideIcon } from 'lucide-react';
+import type {
+  ICalculationOption,
+  IChartEvent,
+  IChartEventItem,
+} from '@openpanel/validation';
+import {
+  CalculatorIcon,
+  CheckIcon,
+  DatabaseIcon,
+  FilterIcon,
+  type LucideIcon,
+  SigmaIcon,
+  TrendingUpIcon,
+} from 'lucide-react';
 import { ReportSegment } from '../ReportSegment';
 import { changeEvent } from '../reportSlice';
 import { PropertiesCombobox } from './PropertiesCombobox';
@@ -54,7 +78,7 @@ export function ReportSeriesItem({
 
       {/* Segment and Filter buttons - only for events */}
       {chartEvent && (showSegment || showAddFilter) && (
-        <div className="flex gap-2 p-2 pt-0">
+        <div className="flex flex-wrap gap-2 p-2 pt-0">
           {showSegment && (
             <ReportSegment
               value={chartEvent.segment}
@@ -144,12 +168,112 @@ export function ReportSeriesItem({
               )}
             </PropertiesCombobox>
           )}
+
+          {showSegment && (
+            <CalculationOptionDropdown
+              value={chartEvent.calculationOption}
+              onChange={(option) => {
+                dispatch(
+                  changeEvent({
+                    ...chartEvent,
+                    calculationOption: option,
+                  }),
+                );
+              }}
+            />
+          )}
         </div>
       )}
 
       {/* Filters - only for events */}
       {chartEvent && !isSelectManyEvents && <FiltersList event={chartEvent} />}
     </div>
+  );
+}
+
+const calculationOptionLabels: Record<
+  NonNullable<ICalculationOption>,
+  string
+> = {
+  cumulative_sum: 'Cumulative Sum',
+  rolling_average_7: '7-day Rolling Avg',
+  rolling_average_14: '14-day Rolling Avg',
+  rolling_average_28: '28-day Rolling Avg',
+};
+
+function CalculationOptionDropdown({
+  value,
+  onChange,
+}: {
+  value: ICalculationOption;
+  onChange: (option: ICalculationOption) => void;
+}) {
+  const rollingAverageValues = [
+    'rolling_average_7',
+    'rolling_average_14',
+    'rolling_average_28',
+  ] as const;
+  const activeRolling = rollingAverageValues.find((v) => v === value);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="flex items-center gap-1 rounded-md border border-border bg-card p-1 px-2 text-sm font-medium leading-none text-left min-w-0"
+        >
+          <CalculatorIcon size={12} className="shrink-0" />
+          <span className="truncate">
+            {value ? calculationOptionLabels[value] : 'Calculation'}
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuLabel>Calculation Options</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            onClick={() => onChange(undefined)}
+          >
+            None
+            {!value && (
+              <CheckIcon className="ml-auto size-4" />
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onChange('cumulative_sum')}
+          >
+            <SigmaIcon className="size-4 mr-2" />
+            Cumulative Sum
+            {value === 'cumulative_sum' && (
+              <CheckIcon className="ml-auto size-4" />
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>
+              <TrendingUpIcon className="size-4 mr-2" />
+              Rolling Average
+              {activeRolling && (
+                <CheckIcon className="ml-auto size-4" />
+              )}
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              {rollingAverageValues.map((opt) => (
+                <DropdownMenuItem
+                  key={opt}
+                  onClick={() => onChange(opt)}
+                >
+                  {calculationOptionLabels[opt]}
+                  {value === opt && (
+                    <CheckIcon className="ml-auto size-4" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

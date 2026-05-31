@@ -8,8 +8,39 @@ import {
   sum,
 } from '@openpanel/common';
 import { alphabetIds } from '@openpanel/constants';
-import type { FinalChart } from '@openpanel/validation';
+import type { FinalChart, ICalculationOption, IChartEvent } from '@openpanel/validation';
 import type { ConcreteSeries } from './types';
+
+export function applyCalculationOption(
+  data: Array<{ date: string; count: number; total_count?: number }>,
+  option: ICalculationOption
+): Array<{ date: string; count: number; total_count?: number }> {
+  if (!option) return data;
+
+  if (option === 'cumulative_sum') {
+    let runningTotal = 0;
+    return data.map((d) => {
+      runningTotal += d.count;
+      return { ...d, count: runningTotal };
+    });
+  }
+
+  const windowMatch = option.match(/^rolling_average_(\d+)$/);
+  if (windowMatch) {
+    const window = Number.parseInt(windowMatch[1]!, 10);
+    return data.map((d, i) => {
+      const start = Math.max(0, i - window + 1);
+      const windowSlice = data.slice(start, i + 1);
+      const avg = round(
+        windowSlice.reduce((s, x) => s + x.count, 0) / windowSlice.length,
+        2
+      );
+      return { ...d, count: avg };
+    });
+  }
+
+  return data;
+}
 
 /**
  * Format concrete series into FinalChart format (backward compatible)
@@ -59,6 +90,13 @@ export function format(
       ? alphabetIds[cs.definitionIndex]
       : undefined;
 
+    // Apply calculation option (cumulative sum, rolling average)
+    const calculationOption =
+      cs.definition.type === 'event'
+        ? (cs.definition as IChartEvent).calculationOption
+        : undefined;
+    const transformedData = applyCalculationOption(cs.data, calculationOption);
+
     // Build display name with optional alpha ID
     let displayName: string[];
 
@@ -75,7 +113,7 @@ export function format(
     }
 
     // Calculate metrics for this series
-    const counts = cs.data.map((d) => d.count);
+    const counts = transformedData.map((d) => d.count);
     const metrics = {
       sum: sum(counts),
       average: round(average(counts), 2),
@@ -136,7 +174,7 @@ export function format(
             }
           : {}),
       },
-      data: cs.data.map((item, index) => ({
+      data: transformedData.map((item, index) => ({
         date: item.date,
         count: item.count,
         previous: previousSerie?.data[index]

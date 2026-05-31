@@ -70,6 +70,15 @@ export const zChartEventSegment = z
   .default('event')
   .describe('Defines how the event data should be segmented or aggregated');
 
+export const zCalculationOption = z
+  .enum([
+    'cumulative_sum',
+    'rolling_average_7',
+    'rolling_average_14',
+    'rolling_average_28',
+  ])
+  .optional();
+
 export const zChartEvent = z.object({
   id: z
     .string()
@@ -91,6 +100,9 @@ export const zChartEvent = z.object({
     .array(zChartEventFilter)
     .default([])
     .describe('Filters applied specifically to this event'),
+  calculationOption: zCalculationOption.describe(
+    'Post-processing calculation to apply to the time series data',
+  ),
 });
 
 export const zChartFormula = z.object({

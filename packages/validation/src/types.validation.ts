@@ -5,6 +5,7 @@ export type UnionOmit<T, K extends keyof any> = T extends any
   : never;
 
 import type {
+  zCalculationOption,
   zChartBreakdown,
   zChartEvent,
   zChartEventItem,
@@ -57,6 +58,7 @@ export type IGetChartDataInput = {
   endDate: string;
 } & Omit<IReportInput, 'series' | 'startDate' | 'endDate' | 'range'>;
 export type ICriteria = z.infer<typeof zCriteria>;
+export type ICalculationOption = z.infer<typeof zCalculationOption>;
 
 export type PreviousValue =
   | {
